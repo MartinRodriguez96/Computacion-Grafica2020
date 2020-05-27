@@ -1,0 +1,418 @@
+<!DOCTYPE html> 
+<html lang="en"> 
+
+     <head> 
+          <title>Jueguito Martin</title> 
+          <meta charset="utf-8"> 
+          <meta name="viewport"> 
+          <style> 
+              
+
+               #info 
+               { 
+                    position: absolute; 
+                    top: 10px; 
+                    width: 100%; 
+                    padding: 5px; 
+                    text-align: center;
+                    color: #000000; 
+                    
+               } 
+
+              
+          </style> 
+     </head> 
+
+     <body> 
+
+          <div id="info">
+                <br> 
+                       Martin Rodriguez<br/>
+               <strong>ContextMenu+click</strong>: Agregar Cubo horizontal,
+               <strong>supr+click</strong>: Agregar Cubo vertical,
+               <strong>Ctrl+click</strong>: Agregar Esfera,
+               <strong>esc+click</strong>: Agregar esfera pequeña,
+               <strong>alt+click</strong>: Agregar Cilindro,
+               <strong>ins+click</strong>: Agregar Cilindro Pequeño,
+               <strong>avpag+click</strong>: Agregar cono truncado,
+               <strong>fin+click</strong>: Rotar,
+               <strong>shift + click</strong>: quitar Objeto;
+                   </div>
+
+          
+
+          <!-- additional libraries --> 
+          <script src="http://dir.by/example_lib/tree_js/WebGL.js"></script> 
+         
+         <script src="js/three.min1.js"></script>
+
+         <script src="js/stats.min.js"></script>
+              
+             
+
+          <script> 
+
+               if ( WEBGL.isWebGLAvailable() === false ) { 
+
+                    document.body.appendChild( WEBGL.getWebGLErrorMessage() ); 
+
+               } 
+
+               var camera, scene, renderer;
+               var container, stats;
+               var plane,projector; 
+               var mouse, raycaster,theta = 45, isShiftDown = false, isCtrlDown = false, isaltDown=false,isContextMenuDown=false,isDeleteDown=false,
+               isEscapeDown=false,isInsertDown=false,isPageDownDown=false,isEndDown=false,target = new THREE.Vector3(0, 200, 0);
+               var normalMatrix = new THREE.Matrix3(); 
+
+               var cuberollOverMesh, cuberollOverMaterial,cube1rollOverMesh, cube1rollOverMaterial;
+               var sphererollOverMesh, sphererollOverMaterial,sphere1rollOverMesh, sphere1rollOverMaterial; 
+               var CylinderrollOverMesh, CylinderrollOverMaterial, Cylinder1rollOverMesh, Cylinder1rollOverMaterial,Cylinder2rollOverMesh, Cylinder2rollOverMaterial; 
+               var CubeGeo, CubeMaterial,CubeGeo1, Cube1Material; 
+               var sphereGeo,sphereMaterial,sphere1Geo,sphere1Material;
+               var CylinderGeo, CylinderMaterial,Cylinder1Geo, Cylinder1Material,Cylinder2Geo, Cylinder2Material; 
+
+               var objects = []; 
+
+              init(); 
+              animate();
+               
+
+               function init() 
+               { 
+                   container = document.createElement('div');
+                   document.body.appendChild(container);
+
+                   var info = document.createElement('div');
+                   info.style.position = 'absolute';
+                   info.style.top = '10px';
+                   info.style.width = '100%';
+                   info.style.textAlign = 'center';
+                   container.appendChild(info);
+                    camera = new THREE.PerspectiveCamera( 45, window.innerWidth / window.innerHeight, 1, 10000 ); 
+                    camera.position.set( 500, 800, 1300 ); 
+                    camera.lookAt( 0, 0, 0 ); 
+
+                    scene = new THREE.Scene(); 
+                    scene.background = new THREE.Color( 0xf0f0f0 ); 
+                   
+                     
+                       
+                      
+
+                    
+
+                   //cube
+                   CubeGeo= new THREE.BoxGeometry( 70, 70, 100 ); 
+                   CubeMaterial = new THREE.MeshLambertMaterial( { color: 0xE2B876 } ); 
+                   
+                   Cube1Geo= new THREE.BoxGeometry( 50, 50, 100 ); 
+                   Cube1Material= new THREE.MeshLambertMaterial( { color: 0x000000 } ); 
+                   
+                                      
+                   //sphere
+                    sphereGeo= new THREE.SphereGeometry( 45, 32, 32 );
+                    sphereMaterial = new THREE.MeshLambertMaterial( { color: 0xE2B876 } ); 
+                   
+                    sphere1Geo= new THREE.SphereGeometry( 15, 32, 32 );
+                    sphere1Material = new THREE.MeshLambertMaterial( { color: 0x000000 } ); 
+                   
+                   //Cylinder
+                   CylinderGeo = new THREE.CylinderGeometry( 36, 36, 90, 32 );
+                   CylinderMaterial = new THREE.MeshLambertMaterial( { color: 0xA6721F } );
+                   
+                   Cylinder1Geo = new THREE.CylinderGeometry( 16, 16, 50, 32 );
+                   Cylinder1Material = new THREE.MeshLambertMaterial( { color: 0xE2B876 } );
+                   
+                   Cylinder2Geo = new THREE.CylinderGeometry( 30, 60, 60, 32 );
+                   Cylinder2Material = new THREE.MeshLambertMaterial( { color: 0x0000ff } );
+
+                    // grid 
+                     var size = 500, step = 50;
+                     var geometry = new THREE.Geometry();
+
+                     for (var i = -size; i <= size; i += step)
+                     {
+
+                    geometry.vertices.push(new THREE.Vector3(-size, 0, i));
+                    geometry.vertices.push(new THREE.Vector3(size, 0, i));
+
+                    geometry.vertices.push(new THREE.Vector3(i, 0, -size));
+                    geometry.vertices.push(new THREE.Vector3(i, 0, size));
+
+                     }
+
+                   var line = new THREE.Line(geometry, material);
+                   line.type = THREE.LinePieces;
+                   scene.add(line);
+                   
+                    projector = new THREE.Projector();
+
+                    // 
+                    raycaster = new THREE.Raycaster(); 
+                    mouse = new THREE.Vector2(); 
+
+                  
+
+                    plane = new THREE.Mesh(new THREE.PlaneGeometry(1000, 1000), new THREE.MeshBasicMaterial());
+                    plane.rotation.x = -Math.PI / 2;
+                    plane.visible = false;
+                    scene.add(plane);
+
+                    objects.push(plane);
+                   
+                   var material = new THREE.MeshBasicMaterial({ color: 0xff0000, wireframe: true });
+
+                   mouse = new THREE.Vector3(0, 10000, 0.5);
+
+                    // lights 
+                    var ambientLight = new THREE.AmbientLight(0x606060);
+                    scene.add(ambientLight);
+
+                    var directionalLight = new THREE.DirectionalLight(0xffffff);
+                    directionalLight.position.x = Math.random() - 0.5;
+                    directionalLight.position.y = Math.random() - 0.5;
+                    directionalLight.position.z = Math.random() - 0.5;
+                    directionalLight.position.normalize();
+                    scene.add(directionalLight);
+
+                    var directionalLight = new THREE.DirectionalLight(0x808080);
+                    directionalLight.position.x = Math.random() - 0.5;
+                    directionalLight.position.y = Math.random() - 0.5;
+                    directionalLight.position.z = Math.random() - 0.5;
+                    directionalLight.position.normalize();
+                    scene.add(directionalLight);
+
+                    renderer = new THREE.CanvasRenderer();
+                    renderer.setClearColor(0xf0f0f0);
+                    renderer.setSize(window.innerWidth, window.innerHeight);
+                    container.appendChild(renderer.domElement);
+
+                    stats = new Stats();
+                    stats.domElement.style.position = 'absolute';
+                    stats.domElement.style.top = '0px';
+                    container.appendChild(stats.domElement);
+
+                    document.addEventListener( 'mousemove', onDocumentMouseMove, false ); 
+                    document.addEventListener( 'mousedown', onDocumentMouseDown, false ); 
+                    document.addEventListener( 'keydown', onDocumentKeyDown, false ); 
+                    document.addEventListener( 'keyup', onDocumentKeyUp, false ); 
+
+                    window.addEventListener( 'resize', onWindowResize, false ); 
+               } 
+
+               function onWindowResize() 
+               { 
+                    camera.aspect = window.innerWidth / window.innerHeight; 
+                    camera.updateProjectionMatrix(); 
+
+                    renderer.setSize( window.innerWidth, window.innerHeight ); 
+               } 
+
+               function onDocumentMouseMove( event ) 
+               { 
+                    event.preventDefault(); 
+
+                   mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
+                   mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
+
+                   var intersects = raycaster.intersectObjects(scene.children);
+
+
+                    if ( intersects.length > 0 ) 
+                    {
+                         var intersect = intersects[ 0 ]; 
+                        
+                        
+                    
+                    }
+                   
+
+                    
+               
+               } 
+
+               function onDocumentMouseDown( event ) 
+               { 
+                    event.preventDefault(); 
+
+                    var intersects = raycaster.intersectObjects(objects);
+
+                    if (intersects.length > 0) {
+
+                    var intersect = intersects[0];
+
+                    if (isShiftDown) {
+
+                    if (intersect.object != plane) {
+
+                        scene.remove(intersect.object);
+
+                        objects.splice(objects.indexOf(intersect.object), 1);
+
+                    }
+                         
+                    }
+                       
+                         
+                         else 
+                         {  normalMatrix.getNormalMatrix(intersect.object.matrixWorld);
+                              var normal = intersect.face.normal.clone();
+                              normal.applyMatrix3(normalMatrix).normalize();
+                             
+                             if(isContextMenuDown)
+                                 {
+                                     
+                              ;
+                              /// creat cube
+                              var cubevoxel = new THREE.Mesh( CubeGeo, CubeMaterial ); 
+                              cubevoxel.position.addVectors(intersect.point, normal);
+                              cubevoxel.position.divideScalar(50).floor().multiplyScalar(50).addScalar(25);
+                              scene.add( cubevoxel ); 
+
+                              objects.push( cubevoxel ); 
+                                     
+                                     cubevoxel.rotateY(1.56);
+                                    
+                                 }
+                             
+                             if(isDeleteDown)
+                                 {
+                              
+                              /// creat cube1
+                             var cube1voxel = new THREE.Mesh( Cube1Geo, Cube1Material ); 
+                              cube1voxel.position.copy( intersect.point ).add( intersect.face.normal ); 
+                              cube1voxel.position.divideScalar( 50 ).floor().multiplyScalar( 50 ).addScalar( 25 ); 
+                              scene.add( cube1voxel ); 
+
+                              objects.push( cube1voxel ); 
+                                     
+                                    
+                                 }
+                              
+                             if(isCtrlDown)
+                                 {
+                              
+                              /// creat sphere
+                              var spherevoxel = new THREE.Mesh( sphereGeo, sphereMaterial ); 
+                              spherevoxel.position.copy( intersect.point ).add( intersect.face.normal ); 
+                              spherevoxel.position.divideScalar( 50 ).floor().multiplyScalar( 50 ).addScalar( 25 ); 
+                              scene.add( spherevoxel ); 
+
+                              objects.push( spherevoxel ); 
+                                 }
+                             
+                             if(isEscapeDown)
+                                 {
+                              
+                              /// creat sphere 1
+                             var sphere1voxel = new THREE.Mesh( sphere1Geo, sphere1Material ); 
+                              sphere1voxel.position.copy( intersect.point ).add( intersect.face.normal ); 
+                              sphere1voxel.position.divideScalar( 50 ).floor().multiplyScalar( 50 ).addScalar( 25 ); 
+                              scene.add( sphere1voxel ); 
+
+                              objects.push( sphere1voxel ); 
+                                 }
+                             
+                            if(isaltDown)
+                                 {
+                              
+                              /// creat Cylinder
+                              var Cylindervoxel = new THREE.Mesh( CylinderGeo, CylinderMaterial ); 
+                              Cylindervoxel.position.copy( intersect.point ).add( intersect.face.normal ); 
+                              Cylindervoxel.position.divideScalar( 50 ).floor().multiplyScalar( 50 ).addScalar( 25 ); 
+                              scene.add( Cylindervoxel); 
+
+                              objects.push( Cylindervoxel ); 
+                                 }
+                             
+                             if(isInsertDown)
+                                 {
+                              /// creat Cylinder 2
+                                     
+                              var Cylinder1voxel = new THREE.Mesh( Cylinder1Geo, Cylinder1Material ); 
+                              Cylinder1voxel.position.copy( intersect.point ).add( intersect.face.normal ); 
+                              Cylinder1voxel.position.divideScalar( 50 ).floor().multiplyScalar( 50 ).addScalar( 25 ); 
+                              scene.add( Cylinder1voxel); 
+
+                              objects.push( Cylinder1voxel ); 
+                                 }
+                             
+                             if(isPageDownDown)
+                                 {
+                             
+                              /// creat Cylinder 2
+                                     
+                              var Cylinder2voxel = new THREE.Mesh( Cylinder2Geo, Cylinder2Material ); 
+                              Cylinder2voxel.position.copy( intersect.point ).add( intersect.face.normal ); 
+                              Cylinder2voxel.position.divideScalar( 50 ).floor().multiplyScalar( 50 ).addScalar( 25 ); 
+                              scene.add( Cylinder2voxel); 
+
+                              objects.push( Cylinder2voxel ); 
+                                 }
+                         } 
+
+                         render(); 
+                    } 
+               } 
+
+               function onDocumentKeyDown( event ) 
+               { 
+                    switch( event.keyCode ) 
+                    { 
+                         case 16: isShiftDown = true; break; 
+                         case 17: isCtrlDown=true; break;
+                         case 18: isaltDown=true;break;
+                         case 93 :isContextMenuDown=true; break;
+                         case 46: isDeleteDown=true; break;
+                         case 27: isEscapeDown=true;break;
+                         case 45: isInsertDown=true;break;
+                         case 34: isPageDownDown=true;break;
+                         case 35: isEndDown=true;break;  
+                    } 
+               } 
+
+               function onDocumentKeyUp( event ) 
+               { 
+                    switch ( event.keyCode ) 
+                    { 
+                         case 16: isShiftDown = false; break; 
+                         case 17: isCtrlDown=false; break;
+                         case 18: isaltDown=false; break;
+                         case 93 :isContextMenuDown=false; break;
+                         case 46: isDeleteDown=false; break;
+                         case 27: isEscapeDown=false;break;
+                         case 45 : isInsertDown=false;break;
+                         case 34: isPageDownDown=false;break;
+                         case 35: isEndDown=false;break;
+                    } 
+               } 
+              function animate() {
+
+            requestAnimationFrame(animate);
+
+            render();
+            stats.update();
+
+        }
+
+               function render() 
+               { 
+                   if (isEndDown) {
+
+                theta += mouse.x * 3;
+
+            }
+
+            camera.position.x = 1400 * Math.sin(theta * Math.PI / 360);
+            camera.position.z = 1400 * Math.cos(theta * Math.PI / 360);
+            camera.lookAt(target);
+
+            raycaster = projector.pickingRay(mouse.clone(), camera);
+            renderer.render( scene, camera ); 
+               } 
+
+          </script> 
+     </body> 
+
+</html>

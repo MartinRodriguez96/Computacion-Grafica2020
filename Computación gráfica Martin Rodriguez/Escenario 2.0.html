@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Escenario 2.0</title>
+    <meta charset="utf-8">
+    <script src="js/three.min.js"></script>
+    <script src="js/DAT.GUI.min1.js"></script>
+    <style>
+        body {
+            margin: 0;
+            overflow: hidden;
+        }
+    </style>
+</head>
+<script>
+
+    var renderer;
+    var scene;
+    var camera;
+    var clock;
+    var control;
+    var directionalLightHelper;
+    var ambientLight;
+    var directionalLight;
+
+    function init() {
+
+        scene = new THREE.Scene();
+
+        camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 1000);
+
+        renderer = new THREE.WebGLRenderer();
+        renderer.setClearColor(0x94A7CF, 1.0);
+        renderer.physicallyCorrectLights = true;
+        renderer.gammaInput = true;
+        renderer.gammaOutput = true;
+        renderer.shadowMap.enabled = true;
+        renderer.toneMapping = THREE.ReinhardToneMapping;
+        renderer.setPixelRatio( window.devicePixelRatio );
+        renderer.setSize( window.innerWidth, window.innerHeight );
+
+        //Load objects
+        var textureLoader= new THREE.TextureLoader();
+        var floorTexture=textureLoader.load("js/textures/terrain/piso de tierra.png");
+        floorTexture.wrapS=THREE.RepeatWrapping;
+        floorTexture.wrapT=THREE.RepeatWrapping;
+        //floorTexture.repeat.set(5,5);
+        
+        
+        var planeGeometry = new THREE.PlaneGeometry(35, 35);
+       
+        var planeMaterial = new THREE.MeshLambertMaterial({color: 0xD4A257, map:floorTexture});
+       
+        var plane = new THREE.Mesh(planeGeometry, planeMaterial);
+       
+        plane.receiveShadow = true;
+        plane.rotation.x = -0.5 * Math.PI;
+        plane.position.x = 0;
+        plane.position.y = 0;
+        plane.position.z = 0;
+        scene.add(plane);
+        
+        
+        
+        //Crates
+        var cubeGeometry = new THREE.BoxGeometry(6, 6, 6);
+        var cubeGeometry1 = new THREE.BoxGeometry(4, 4, 4);
+        var cubeGeometry2 = new THREE.BoxGeometry(2, 2, 2);
+        var cubeGeometry3 = new THREE.BoxGeometry(1, 1, 1);
+        var cubeGeometry4 = new THREE.BoxGeometry(1, 1, 1);
+        var textureLoader= new THREE.TextureLoader();
+        var texture=textureLoader.load("js/textures/crate/crate1.jpg");
+        var cubeMaterial = new THREE.MeshPhongMaterial({color: 0xB59457, map:texture, transparent:true, opacity:1});
+        var cube = new THREE.Mesh(cubeGeometry, cubeMaterial);
+        var cube1 = new THREE.Mesh(cubeGeometry1, cubeMaterial);
+        var cube2 = new THREE.Mesh(cubeGeometry2, cubeMaterial);
+        var cube3 = new THREE.Mesh(cubeGeometry3, cubeMaterial);
+        var cube4 = new THREE.Mesh(cubeGeometry4, cubeMaterial);
+        cube.castShadow = true;
+        cube.receiveShadow = true;
+        
+        cube.position.set(-3.5,1.5,1)
+        scene.add(cube);
+        
+        
+        scene.add(cube1);
+        cube1.position.set(-4,1.5,5)
+        
+       
+        scene.add(cube2);
+        cube2.position.set(-5,4,5)
+        
+        scene.add(cube3);
+        cube3.position.set(-5,5,2)
+        
+        scene.add(cube4);
+        cube4.position.set(-5,5,3)
+
+        //Walls
+        var wallTexture=textureLoader.load("js/textures/wall/wall1.jpg");
+        wallTexture.wrapS=THREE.RepeatWrapping;
+        wallTexture.wrapT=THREE.RepeatWrapping;
+        wallTexture.repeat.set(3,2);
+        var wallGeometry = new THREE.BoxGeometry(28, 9, 1);
+        var wallMaterial = new THREE.MeshPhongMaterial({color: 0x9B804F, map:wallTexture, transparent:true, opacity:1});
+        var wall = new THREE.Mesh(wallGeometry, wallMaterial);
+        wall.position.y = 2.5;
+        wall.position.z = -9;
+        wall.position.x=2;
+        wall.castShadow = true;
+        wall.receiveShadow = true;
+        scene.add(wall)
+        var wall1=wall.clone();
+        scene.add(wall1)
+        wall1.rotation.y=0.5 * Math.PI;
+        wall1.position.x = -6.5;
+        wall1.position.z = 0;
+        
+        //puerta
+        var geometry = new THREE.CylinderGeometry( 4, 4, 1, 32 );
+        var textureLoader= new THREE.TextureLoader();
+        var texture=textureLoader.load("js/textures/crate/puerta.jpg");
+        var cilindroMaterial = new THREE.MeshPhongMaterial({color: 0x342717, map:texture, transparent:true, opacity:1});
+        var cylinder = new THREE.Mesh( geometry, cilindroMaterial );
+        scene.add( cylinder );
+        
+        cylinder.position.x =5;
+        cylinder.position.y =2;
+        cylinder.position.z =-8;
+        cylinder.rotation.x =-1.55;
+        cylinder.rotation.y =1.55;
+        
+        
+     
+        camera.lookAt(scene.position);
+        camera.position.x = 6.5;
+        camera.position.y = 4.5;
+        camera.position.z = 24;
+        
+        // Ligths
+        ambientLight = new THREE.AmbientLight(0xCE9D52,6);
+        scene.add(ambientLight);
+        
+        directionalLight = new THREE.DirectionalLight(0xffffff, 2 );
+        directionalLight.position.set(10, 20 , 20); 
+        directionalLight.target.position.set(0, 0 , 0); 
+        directionalLight.shadow.camera.near = 0;
+        directionalLight.shadow.camera.far = 50; //ALTURA DEL CUBO
+        directionalLight.castShadow = true;
+        directionalLight.shadow.mapSize.width = 3 * 512; 
+        directionalLight.shadow.mapSize.height = 3 * 512;
+        directionalLight.shadow.camera.top = 25; //X
+        directionalLight.shadow.camera.right = 25;
+        directionalLight.shadow.camera.left = -25;
+        directionalLight.shadow.camera.bottom = -25;
+        directionalLight.shadow.camera.visible = true;
+        scene.add(directionalLight);
+
+
+        control = new function() {
+            this.rotationSpeed = 0;
+            
+        };
+        addControlGui(control);
+
+        clock = new THREE.Clock();
+        document.body.appendChild(renderer.domElement);
+
+        render();
+    }
+
+    function addControlGui(controlObject) {
+        var gui = new dat.GUI();
+        gui.add(controlObject, 'rotationSpeed', -1, 1);
+        
+    }
+
+
+    function render() {
+
+        var delta =  clock.getDelta();
+        var rotSpeed = delta*control.rotationSpeed;
+        camera.position.x = camera.position.x * Math.cos(rotSpeed) + camera.position.z * Math.sin(rotSpeed);
+        camera.position.z = camera.position.z * Math.cos(rotSpeed) - camera.position.x * Math.sin(rotSpeed);
+        camera.lookAt(scene.position);
+    
+        
+        requestAnimationFrame(render);
+        renderer.render(scene, camera);
+    }
+
+
+    function handleResize() {
+        camera.aspect = window.innerWidth / window.innerHeight;
+        camera.updateProjectionMatrix();
+        renderer.setSize(window.innerWidth, window.innerHeight);
+    }
+
+    window.onload = init;
+    window.addEventListener('resize', handleResize, false);
+
+</script>
+<body>
+</body>
+</html>
