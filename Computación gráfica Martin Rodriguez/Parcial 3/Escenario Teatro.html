@@ -1,0 +1,335 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Escenario 2.0</title>
+    <meta charset="utf-8">
+    <script src="js/three.min.js"></script>
+    <script src="js/dat.gui.min1.js"></script>
+    <style>
+        body {
+            margin: 0;
+            overflow: hidden;
+        }
+    </style>
+</head>
+<script>
+
+    var renderer;
+    var scene;
+    var camera;
+    var clock;
+    var control;
+    var directionalLightHelper;
+    var ambientLight;
+    var directionalLight;
+
+    function init() {
+
+        scene = new THREE.Scene();
+
+        camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 1000);
+
+        renderer = new THREE.WebGLRenderer();
+        renderer.setClearColor(0x000000, 1.0);
+        renderer.physicallyCorrectLights = true;
+        renderer.gammaInput = true;
+        renderer.gammaOutput = true;
+        renderer.shadowMap.enabled = true;
+        renderer.toneMapping = THREE.ReinhardToneMapping;
+        renderer.setPixelRatio( window.devicePixelRatio );
+        renderer.setSize( window.innerWidth, window.innerHeight );
+
+        //Load objects
+        var textureLoader= new THREE.TextureLoader();
+        var floorTexture=textureLoader.load("js/textures/crate/piso.jpg");
+        
+        
+        
+        var planeGeometry = new THREE.PlaneGeometry(90, 60);
+       
+        var planeMaterial = new THREE.MeshLambertMaterial({color: 0xD4A257, map:floorTexture});
+       
+        var plane = new THREE.Mesh(planeGeometry, planeMaterial);
+       
+        plane.receiveShadow = true;
+        plane.rotation.x = -0.5 * Math.PI;
+        plane.position.x = 0;
+        plane.position.y = -10;
+        plane.position.z = 0;
+        scene.add(plane);
+        
+        var planeGeometry1 = new THREE.PlaneGeometry(60, 60);
+       
+        var planeMaterial1 = new THREE.MeshLambertMaterial({color: 0xD4A257, map:floorTexture});
+       
+        var plane1 = new THREE.Mesh(planeGeometry1, planeMaterial1);
+       
+        plane1.receiveShadow = true;
+        plane1.rotation.y = -1.3;
+        plane1.position.x = 35;
+        plane1.position.y = 20;
+        plane1.position.z = 0;
+        scene.add(plane1);
+        
+        var planeGeometry2 = new THREE.PlaneGeometry(60, 60);
+       
+        var planeMaterial2 = new THREE.MeshLambertMaterial({color: 0xD4A257, map:floorTexture});
+       
+        var plane2 = new THREE.Mesh(planeGeometry2, planeMaterial2);
+       
+        plane2.receiveShadow = true;
+        plane2.rotation.y = 1.3;
+        plane2.position.x = -35;
+        plane2.position.y = 20;
+        plane2.position.z = 0;
+        scene.add(plane2);
+        
+        var planeGeometry3 = new THREE.PlaneGeometry(60, 60);
+        var textureLoader= new THREE.TextureLoader();
+        var floorTexture3=textureLoader.load("js/textures/wall/cortinas.jpg");
+        var planeMaterial3 = new THREE.MeshPhongMaterial({color: 0xffffff, map: floorTexture3, transparent:true, opacity:100});
+        var plane3 = new THREE.Mesh(planeGeometry3, planeMaterial3);
+       
+        plane3.receiveShadow = true;
+        plane3.rotation.y = 0;
+        plane3.position.x = 0;
+        plane3.position.y = 20;
+        plane3.position.z = -30;
+        scene.add(plane3);
+        
+        
+        
+        
+        
+        
+
+        //Walls
+        var wallTexture=textureLoader.load("js/textures/wall/wall1.jpg");
+        wallTexture.wrapS=THREE.RepeatWrapping;
+        wallTexture.wrapT=THREE.RepeatWrapping;
+        wallTexture.repeat.set(3,2);
+        var wallGeometry = new THREE.BoxGeometry(55, 25, 10);
+        var wallMaterial = new THREE.MeshPhongMaterial({color: 0x000000, map:wallTexture, transparent:true, opacity:1});
+        var wall = new THREE.Mesh(wallGeometry, wallMaterial);
+        wall.position.y = -10;
+        wall.position.z = -30;
+        wall.position.x=0;
+        wall.rotation.x=1.57;
+        wall.castShadow = true;
+        wall.receiveShadow = true;
+        scene.add(wall)
+        
+        var sillaGeometry = new THREE.BoxGeometry(2, 2, 2);
+        var sillaMaterial = new THREE.MeshPhongMaterial({color: 0x110A08, map:wallTexture, transparent:true, opacity:1});
+        var silla = new THREE.Mesh(sillaGeometry, sillaMaterial);
+        
+        silla.position.y = 0;
+        silla.position.z = 10;
+        silla.position.x=0;
+        scene.add(silla)
+        
+        var silla1=silla.clone();
+        silla1.position.y = 0;
+        silla1.position.z = 10;
+        silla1.position.x=3;
+        scene.add(silla1)
+        
+        var silla2=silla.clone();
+        silla2.position.y = 0;
+        silla2.position.z = 10;
+        silla2.position.x=6;
+        scene.add(silla2)
+        
+        var silla3=silla.clone();
+        silla3.position.y = 0;
+        silla3.position.z = 10;
+        silla3.position.x=-3;
+        scene.add(silla3)
+        
+        var silla4=silla.clone();
+        silla4.position.y = 0;
+        silla4.position.z = 10;
+        silla4.position.x=-6;
+        scene.add(silla4)
+        
+        var silla5=silla.clone();
+        silla5.position.y = 0;
+        silla5.position.z = 20;
+        silla5.position.x=0;
+        scene.add(silla5)
+        
+        var silla6=silla.clone();
+        silla6.position.y = 0;
+        silla6.position.z = 20;
+        silla6.position.x=3;
+        scene.add(silla6)
+        
+        var silla7=silla.clone();
+        silla7.position.y = 0;
+        silla7.position.z = 20;
+        silla7.position.x=6;
+        scene.add(silla7)
+        
+        var silla8=silla.clone();
+        silla8.position.y = 0;
+        silla8.position.z = 20;
+        silla8.position.x=-3;
+        scene.add(silla8)
+        
+        var silla9=silla.clone();
+        silla9.position.y = 0;
+        silla9.position.z = 20;
+        silla9.position.x=-6;
+        scene.add(silla9)
+        
+         var silla5=silla.clone();
+        silla5.position.y = 0;
+        silla5.position.z = 30;
+        silla5.position.x=0;
+        scene.add(silla5)
+        
+        var silla6=silla.clone();
+        silla6.position.y = 0;
+        silla6.position.z = 30;
+        silla6.position.x=3;
+        scene.add(silla6)
+        
+        var silla7=silla.clone();
+        silla7.position.y = 0;
+        silla7.position.z = 30;
+        silla7.position.x=6;
+        scene.add(silla7)
+        
+        var silla8=silla.clone();
+        silla8.position.y = 0;
+        silla8.position.z = 30;
+        silla8.position.x=-3;
+        scene.add(silla8)
+        
+        var silla9=silla.clone();
+        silla9.position.y = 0;
+        silla9.position.z = 30;
+        silla9.position.x=-6;
+        scene.add(silla9)
+        
+         var silla5=silla.clone();
+        silla5.position.y = 0;
+        silla5.position.z = 40;
+        silla5.position.x=0;
+        scene.add(silla5)
+        
+        var silla6=silla.clone();
+        silla6.position.y = 0;
+        silla6.position.z = 40;
+        silla6.position.x=3;
+        scene.add(silla6)
+        
+        var silla7=silla.clone();
+        silla7.position.y = 0;
+        silla7.position.z = 40;
+        silla7.position.x=6;
+        scene.add(silla7)
+        
+        var silla8=silla.clone();
+        silla8.position.y = 0;
+        silla8.position.z = 40;
+        silla8.position.x=-3;
+        scene.add(silla8)
+        
+        var silla9=silla.clone();
+        silla9.position.y = 0;
+        silla9.position.z = 40;
+        silla9.position.x=-6;
+        scene.add(silla9)
+        
+        var silla5=silla.clone();
+        silla5.position.y = 0;
+        silla5.position.z = 10;
+        silla5.position.x =15;
+        silla5.rotation.y = 2;
+        scene.add(silla5)
+        
+        var silla6=silla.clone();
+        silla6.position.y = 0;
+        silla6.position.z = 9;
+        silla6.position.x=20;
+        silla6.rotation.y = 2;
+        scene.add(silla6)
+        
+        var silla7=silla.clone();
+        silla7.position.y = 0;
+        silla7.position.z = 8;
+        silla7.position.x= 25;
+        silla7.rotation.y = 2;
+        scene.add(silla7)
+        
+        
+        
+     
+        
+        
+        
+       
+       
+        
+       
+        camera.lookAt(scene.position);
+        camera.position.x = 0 ;
+        camera.position.y = 50;
+        camera.position.z = 100;
+        
+        // Ligths
+        ambientLight = new THREE.AmbientLight(0xCE9D52,10);
+        scene.add(ambientLight);
+        
+        var spotLight = new THREE.SpotLight( 0xffffff,1.5 );
+        spotLight.position.set( 0, 1, 50 );
+        scene.add( spotLight );
+
+
+        control = new function() {
+            this.rotationSpeed = 0;
+            
+        };
+        addControlGui(control);
+
+        clock = new THREE.Clock();
+        document.body.appendChild(renderer.domElement);
+
+        render();
+    }
+
+    function addControlGui(controlObject) {
+        var gui = new dat.GUI();
+        gui.add(controlObject, 'rotationSpeed', -1, 1);
+        
+    }
+
+
+    function render() {
+
+        var delta =  clock.getDelta();
+        var rotSpeed = delta*control.rotationSpeed;
+        camera.position.x = camera.position.x * Math.cos(rotSpeed) + camera.position.z * Math.sin(rotSpeed);
+        camera.position.z = camera.position.z * Math.cos(rotSpeed) - camera.position.x * Math.sin(rotSpeed);
+        camera.lookAt(scene.position);
+    
+        
+        requestAnimationFrame(render);
+        renderer.render(scene, camera);
+    }
+
+
+    function handleResize() {
+        camera.aspect = window.innerWidth / window.innerHeight;
+        camera.updateProjectionMatrix();
+        renderer.setSize(window.innerWidth, window.innerHeight);
+    }
+
+    window.onload = init;
+    window.addEventListener('resize', handleResize, false);
+
+</script>
+<body>
+</body>
+</html>
